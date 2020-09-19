@@ -1,0 +1,14 @@
+This is the client order manger app.
+
+The client will recive orders from the server and display them, then the user will make the dish and once it is done the dish
+component shall be dragged to one of the free panels.
+
+We are going to use websockets to connect to the server and get the orders from it.
+
+Current design supports up to 5 orders at once with 6 out panels.
+
+TODO:
+1. Add drag and drop option to the orders into the panels.
+2. Add login to the server as a specific role. (bar/kithcen).
+
+Occupied panels will be marked with red.
