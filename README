@@ -8,7 +8,9 @@ We are going to use websockets to connect to the server and get the orders from 
 Current design supports up to 5 orders at once with 6 out panels.
 
 TODO:
-1. Add drag and drop option to the orders into the panels.
+1. Add drag and drop option to the orders into the panels. V
 2. Add login to the server as a specific role. (bar/kithcen).
+    Functionality works. V
+    Needs to add a choosing role page.
 
 Occupied panels will be marked with red.

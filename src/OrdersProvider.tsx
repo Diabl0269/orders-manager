@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useState
 } from 'react';
 import { createArrayOfLengthWithNumbers, shouldBeOverridden } from './utils';
@@ -35,15 +36,22 @@ const mockOredersArray: Array<Order> = createArrayOfLengthWithNumbers(
 
 // TODO change to real IP
 const lanEnv = '192.168.1.21';
+const websocketUri = `ws://${lanEnv}:3000/KITHCEN`;
 
 interface Props {
   children: ReactNode;
 }
 
+const isWebsocket = (
+  possibleWebsocket: any | undefined
+): possibleWebsocket is WebSocket => {
+  return typeof possibleWebsocket?.send === 'function';
+};
+
 interface Context {
   orders: Array<Order>;
   removeOrder: (id: string) => void;
-  addOrder: (order: Order) => void
+  addOrder: (order: Order) => void;
 }
 
 const initContext: Context = {
@@ -55,7 +63,39 @@ const initContext: Context = {
 const OrdersContext = createContext(initContext);
 const OrdersProvider = (props: Props) => {
   const { children } = props;
-  const socket = new WebSocket(`ws://${lanEnv}:3000`);
+  const [socket, setSocket] = useState<WebSocket | undefined>(undefined);
+  // let socket = new WebSocket(websocketUri);
+  // console.log('new connection', socket.readyState);
+  // console.log('hey');
+  //
+  useEffect(() => {
+    // console.log('socket', socket);
+    if (!isWebsocket(socket)) {
+      console.log('setting websocket');
+      setSocket(new WebSocket(websocketUri));
+    } else {
+      socket.onopen = (e) => {
+        console.log('open');
+      };
+
+      socket.onclose = (e) => {
+        console.log('closing', socket.readyState);
+      };
+
+      if (socket.readyState === 3) {
+        socket.close();
+        setSocket(new WebSocket(websocketUri));
+      }
+
+      console.log('useEffect reset');
+      // socket.close();
+      // setSocket(new WebSocket(websocketUri));
+
+      return () => {
+        socket.close()
+      }
+    }
+  }, [socket]);
 
   // For debugging weboscokets
   // const [serverMessage, setServerMessage] = useState('No message');
