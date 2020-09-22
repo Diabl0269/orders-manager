@@ -11,6 +11,7 @@ TODO:
 1. Add drag and drop option to the orders into the panels. V
 2. Add login to the server as a specific role. (bar/kithcen).
     Functionality works. V
-    Needs to add a choosing role page.
+    Needs to add a choosing role page. 
+3. Reconnecting websockets. V
 
 Occupied panels will be marked with red.

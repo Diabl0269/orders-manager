@@ -1,12 +1,11 @@
 import React, {
   createContext,
   ReactNode,
-  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
-import { createArrayOfLengthWithNumbers, shouldBeOverridden } from "./utils";
+import { createArrayOfLengthWithNumbers, shouldBeOverridden } from "../utils";
 
 interface Order {
   name: string;
@@ -34,19 +33,14 @@ const mockOredersArray: Array<Order> = createArrayOfLengthWithNumbers(
   5
 ).map((number) => createMockOrder(number.toString()));
 
-// TODO change to real IP
-const lanEnv = "192.168.43.196";
-const websocketUri = `ws://${lanEnv}:3000/KITHCEN`;
+// TODO change to real static IP
+const lanEnv = "192.168.1.21";
+// TODO fix current role
+const websocketUri = `ws://${lanEnv}:3000/0`;
 
 interface Props {
   children: ReactNode;
 }
-
-const isWebsocket = (
-  possibleWebsocket: any | undefined
-): possibleWebsocket is WebSocket => {
-  return typeof possibleWebsocket?.send === "function";
-};
 
 interface Context {
   orders: Array<Order>;

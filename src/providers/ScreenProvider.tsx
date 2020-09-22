@@ -7,7 +7,7 @@ import React, {
   useState
 } from 'react';
 import { View } from 'react-native';
-import { shouldBeOverridden } from './utils';
+import { shouldBeOverridden } from '../utils';
 
 interface Props {
   children: ReactNode;
