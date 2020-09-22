@@ -4,9 +4,9 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState
-} from 'react';
-import { createArrayOfLengthWithNumbers, shouldBeOverridden } from './utils';
+  useState,
+} from "react";
+import { createArrayOfLengthWithNumbers, shouldBeOverridden } from "./utils";
 
 interface Order {
   name: string;
@@ -27,7 +27,7 @@ const createMockOrder = (id: string) => ({
   name: Math.random().toString().slice(0, 3),
   table: Math.random().toString().slice(0, 3),
   orderTime: new Date(),
-  id
+  id,
 });
 
 const mockOredersArray: Array<Order> = createArrayOfLengthWithNumbers(
@@ -35,7 +35,7 @@ const mockOredersArray: Array<Order> = createArrayOfLengthWithNumbers(
 ).map((number) => createMockOrder(number.toString()));
 
 // TODO change to real IP
-const lanEnv = '192.168.1.21';
+const lanEnv = "192.168.43.196";
 const websocketUri = `ws://${lanEnv}:3000/KITHCEN`;
 
 interface Props {
@@ -45,7 +45,7 @@ interface Props {
 const isWebsocket = (
   possibleWebsocket: any | undefined
 ): possibleWebsocket is WebSocket => {
-  return typeof possibleWebsocket?.send === 'function';
+  return typeof possibleWebsocket?.send === "function";
 };
 
 interface Context {
@@ -57,45 +57,51 @@ interface Context {
 const initContext: Context = {
   orders: [],
   removeOrder: shouldBeOverridden,
-  addOrder: shouldBeOverridden
+  addOrder: shouldBeOverridden,
 };
 
 const OrdersContext = createContext(initContext);
 const OrdersProvider = (props: Props) => {
   const { children } = props;
   const [socket, setSocket] = useState<WebSocket | undefined>(undefined);
-  // let socket = new WebSocket(websocketUri);
-  // console.log('new connection', socket.readyState);
-  // console.log('hey');
-  //
+  let timeout = 250;
+
   useEffect(() => {
-    // console.log('socket', socket);
-    if (!isWebsocket(socket)) {
-      console.log('setting websocket');
-      setSocket(new WebSocket(websocketUri));
-    } else {
-      socket.onopen = (e) => {
-        console.log('open');
-      };
+    connect()
+  }, []);
 
-      socket.onclose = (e) => {
-        console.log('closing', socket.readyState);
-      };
+  const connect = () => {
+    const ws = new WebSocket(websocketUri);
+    let connectionInterval: number;
 
-      if (socket.readyState === 3) {
-        socket.close();
-        setSocket(new WebSocket(websocketUri));
-      }
+    ws.onopen = (e) => {
+      console.log("open");
+      setSocket(ws);
 
-      console.log('useEffect reset');
-      // socket.close();
-      // setSocket(new WebSocket(websocketUri));
+      timeout = 250;
+      clearTimeout(connectionInterval);
+    };
 
-      return () => {
-        socket.close()
-      }
-    }
-  }, [socket]);
+    ws.onclose = (e) => {
+      console.log("ws", ws.readyState);
+
+      timeout *= 2;
+      connectionInterval = setTimeout(check, Math.min(10000, timeout));
+    };
+
+    ws.onerror = (e) => {
+      console.log("error", e);
+      ws.close();
+    };
+
+  };
+
+
+  const check = () => {
+    console.log('check', socket);
+    
+    if (!socket || socket.readyState === socket.CLOSED) connect();
+  };
 
   // For debugging weboscokets
   // const [serverMessage, setServerMessage] = useState('No message');
@@ -109,19 +115,6 @@ const OrdersProvider = (props: Props) => {
   const addOrder = (order: Order) => {
     if (isOrder(order)) setOrders(orders.concat(order));
   };
-
-  // useEffect(() => {
-  //   socket.onopen = (e) => {
-  //     console.log('onopen', e);
-
-  //  Receive new orders
-  //     socket.onmessage = (e) => {
-  //       const parsedData = JSON.parse(e.data);
-  //       if (isOrder(parsedData)) setOrders(orders.concat(parsedData));
-  //     };
-
-  //   };
-  // }, []);
 
   return (
     <OrdersContext.Provider value={{ orders, addOrder, removeOrder }}>
