@@ -4,34 +4,29 @@ import React, {
   SetStateAction,
   useContext,
   useMemo,
-  useState,
+  useState
 } from "react";
 import ChooseRoles from "./routes/ChooseRoles";
 import OrdersManager from "./routes/OrdersManager";
 import { shouldBeOverridden } from "./utils";
-
-enum Routes {
-  CHOOSE_ROLES,
-  ORDERS_MANAGER,
-}
+import { Routes } from "./types";
 
 interface Context {
   setRoute: Dispatch<SetStateAction<Routes>>;
 }
 
 const initialContext: Context = {
-  setRoute: shouldBeOverridden,
+  setRoute: shouldBeOverridden
 };
 
 const RouterContext = createContext(initialContext);
 const Router = () => {
-  const [route, setRoute] = useState<Routes>(Routes.ORDERS_MANAGER);
-    console.log('hello world');
-    
-    // Change login in case there are more routes
-    const page = useMemo(() => {
-        return route === Routes.ORDERS_MANAGER ? <OrdersManager /> : <ChooseRoles />
-    }, [route])
+  const [route, setRoute] = useState<Routes>(Routes.CHOOSE_ROLES);
+
+  // Change logic in case there are more routes
+  const page = useMemo(() => {
+    return route === Routes.ORDERS_MANAGER ? <OrdersManager /> : <ChooseRoles />;
+  }, [route]);
 
   return (
     <RouterContext.Provider value={{ setRoute }}>
@@ -42,4 +37,4 @@ const Router = () => {
 
 const useRouter = () => useContext(RouterContext);
 
-export { Router, useRouter, Routes };
+export { Router, useRouter };

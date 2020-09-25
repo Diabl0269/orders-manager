@@ -1,19 +1,20 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Button,
   PanResponder,
   SafeAreaView,
-  StyleProp,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from "expo-status-bar";
 
-import { useOrders, Order } from "../providers/OrdersProvider";
+import { useOrders, Roles } from "../providers/OrdersProvider";
 import { useScreen } from "../providers/ScreenProvider";
 import { createArrayOfLengthWithNumbers } from "../utils";
+import { border } from "../globalStyles";
+import { Order } from "../types";
 
 const formatTime = (date: Date) => {
   return `${date.getHours()}:${date.getMinutes()}`;
@@ -22,11 +23,11 @@ const formatTime = (date: Date) => {
 const returnTrue = () => true;
 
 const isHovering = ({
-  moveX,
-  moveY,
-  x,
-  y,
-}: {
+                      moveX,
+                      moveY,
+                      x,
+                      y
+                    }: {
   moveX: number;
   moveY: number;
   x: Array<number>;
@@ -57,11 +58,11 @@ const OrderItem = (props: OrderProps) => {
         null,
         {
           dx: pan.x,
-          dy: pan.y,
-        },
+          dy: pan.y
+        }
       ],
       {
-        useNativeDriver: false,
+        useNativeDriver: false
       }
     ),
     onPanResponderRelease: (e, gesture) => {
@@ -80,9 +81,9 @@ const OrderItem = (props: OrderProps) => {
       }
       Animated.spring(pan, {
         toValue: { x: 0, y: 0 },
-        useNativeDriver: false,
+        useNativeDriver: false
       }).start();
-    },
+    }
   });
 
   const formattedTime = useMemo(() => {
@@ -111,6 +112,7 @@ interface OutPanelValue {
   pageX: number;
   pageY: number;
 }
+
 type OutPanelCallback = (id: number, dropZoneValue: OutPanelValue) => void;
 
 const OutPanel = (props: PanelProps) => {
@@ -124,7 +126,7 @@ const OutPanel = (props: PanelProps) => {
       dropZoneValues[id] = {
         x: [pageX, pageX + width],
         y: [pageY, pageY + height],
-        hovered: false,
+        hovered: false
       };
       return dropZoneValues;
     });
@@ -152,8 +154,13 @@ const OutPanel = (props: PanelProps) => {
 const outArray = createArrayOfLengthWithNumbers(6);
 
 const OrdersManager = () => {
-  const { orders } = useOrders();
+  const { orders, role, connect, socket } = useOrders();
   const { dropZoneValues } = useScreen();
+
+  useEffect(() => {
+    connect();
+    console.log('connecting');
+  }, [connect]);
 
   const ordersContainer = useMemo(() => {
     return orders.map((order, i) => {
@@ -169,15 +176,21 @@ const OrdersManager = () => {
   }, [outArray]);
 
   const handleDebug = useCallback(() => {
-    console.log("dropZoneValues", dropZoneValues);
+    console.log("role", role);
 
     // socket.send('debugging');
   }, []);
 
+  const roleTitle = useMemo(() => {
+    if (role !== undefined) {
+      return Roles[role];
+    }
+  }, [role]);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.containerWithTitle}>
-        <Text>Orders Panel</Text>
+        <Text style={styles.text}>{roleTitle}</Text>
         <View style={styles.ordersPanel}>{ordersContainer}</View>
       </View>
 
@@ -193,53 +206,49 @@ const OrdersManager = () => {
   );
 };
 
-const border: StyleProp<object> = {
-  borderStyle: "solid",
-  borderColor: "#333",
-  borderWidth: 1,
-  borderRadius: 5,
-};
-
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: 10,
     paddingBottom: 10,
-    flexGrow: 1,
+    flexGrow: 1
   },
   containerWithTitle: {
     ...border,
     alignItems: "center",
-    flexDirection: "column",
+    flexDirection: "column"
   },
   ordersPanel: {
     width: "95%",
     height: 150,
     justifyContent: "space-around",
     flexDirection: "row",
-    padding: 5,
+    padding: 5
   },
   orderContainer: {
     ...border,
     height: "95%",
     padding: 5,
-    justifyContent: "space-around",
+    justifyContent: "space-around"
   },
   outContainer: {
     width: "95%",
     height: 100,
     padding: 5,
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-around"
   },
   outPanel: {
     ...border,
     height: "95%",
     width: 100,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center"
   },
+  text: {
+    textTransform: "capitalize"
+  }
 });
 
 export default OrdersManager;
